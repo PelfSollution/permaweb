@@ -134,7 +134,9 @@ class ArticleForm extends Component<ArticleForm> {
             getRangeAt: () => ({
               getBoundingClientRect: () => {
                 // @ts-ignore
-                const [{ left, top }] = window.getSelection().getRangeAt(0).cloneRange().getClientRects()
+                const { left: leftDefault } = self.wrapper.getBoundingClientRect()
+                // @ts-ignore
+                const [{ left, top } = { left: leftDefault, top: event.clientY }] = window.getSelection().getRangeAt(0).cloneRange().getClientRects()
                 const { bottom, height, right } = event.target.getBoundingClientRect()
                 return { bottom, height, left, top, right, width: 0 }
               }
