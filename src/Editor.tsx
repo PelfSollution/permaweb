@@ -37,7 +37,6 @@ class ArticleForm extends Component<ArticleForm> {
     savedFileContent: "",
     fileContent: "",
     fileMarkdown: "",
-    toggleToolbar: false,
     showEmoji: false,
     showMarkdown: false
   };
@@ -109,36 +108,42 @@ class ArticleForm extends Component<ArticleForm> {
     this.updateFileContent(this.editor.getContent())
   };
   customToolBarTrigger = () => {
+    // TODO: return focus to editor after clicking on toolbar
     const self = this
     const Extension = MediumEditor.Extension.extend({
       name: 'toolbar-trigger',
       init: function () {
         // @ts-ignore
         const toggle = event => {
+          // @ts-ignore
+          if (!self.wrapper) {
+            return
+          }
+          // only clicks inside wrapper
+          // @ts-ignore
+          if (!self.wrapper.contains(event.target)) {
+            return
+          }
+          // normal selection, so normal behavior
+          if (((window.getSelection() || '').toString().trim())) {
+            return
+          }
           const toolbar = this.base.getExtensionByName('toolbar')
-          // todo: this is messing with the regular way the toolbar is displayed, make sure this isn't breaking something else
-          self.setState({ toggleToolbar: !self.state.toggleToolbar }, () => {
-            // state has been toggled, so the performed check is "backwards"
-            if (!self.state.toggleToolbar) {
-              toolbar.hideToolbar()
-              return
-            }
-            // hack: mocking the selection range from mouse click coordinates
-            // @ts-ignore
-            toolbar.positionToolbar({
-              getRangeAt: () => ({
+          // @ts-ignore
+          toolbar.positionToolbar({
+            getRangeAt: () => ({
+              getBoundingClientRect: () => {
                 // @ts-ignore
-                getBoundingClientRect: () => {
-                  const { bottom, height, right } = event.target.getBoundingClientRect()
-                  return { bottom, height, left: event.clientX, top: event.clientY - 10, right, width: 0 }
-                }
-              })
+                const [{ left, top }] = window.getSelection().getRangeAt(0).cloneRange().getClientRects()
+                const { bottom, height, right } = event.target.getBoundingClientRect()
+                return { bottom, height, left, top, right, width: 0 }
+              }
             })
-            toolbar.showToolbar()
           })
+          toolbar.showToolbar()
         }
         // need to figure why this is needed, nextTick (zero), should be enough but isn't
-        document.addEventListener('click', e => setTimeout(toggle, 10, e), true)
+        document.addEventListener('click', e => setTimeout(toggle, 10, e))
       },
     })
     return new Extension()
@@ -217,43 +222,54 @@ class ArticleForm extends Component<ArticleForm> {
         <p>
           <Moment fromNow>{file && file.date}</Moment>
         </p>
-        {
-          this.state.showMarkdown ?
-            <CodeMirror
-              value={this.state.fileMarkdown}
-              onChange={this.updateMarkdownEvent}
-              options={{ lineNumbers: true, lineWrapping: true }}
-            />
-            : <Editor
-              id="epona-editor"
-              style={{
-                minHeight: "10vh",
-                fontSize: "16px",
-                border: "none",
-                overflow: "auto",
-                outline: "none",
-                WebkitBoxShadow: "none",
-                MozBoxShadow: "none",
-                BoxShadow: "none",
-                resize: "none"
-              }}
-              onChange={this.checkFileContent}
-              text={this.state.fileContent}
-              options={{
-                toolbar: {
-                  buttons: ['bold', 'italic', 'underline', 'emoji']
-                },
-                buttonLabels: 'fontawesome',
-                extensions: {
-                  'emoji': this.emojiButton(),
-                  'toolbar-trigger': this.customToolBarTrigger()
-                }
-              }}
-            />
-        }
-        <div>
+        <div
+          // @ts-ignore
+          ref={n => this.wrapper = n}
+        >
           {
-            this.state.showEmoji ? <Picker title='Pick your emoji…' emoji='point_up' set='emojione' onSelect={this.addEmoji} style={{ position: 'absolute', bottom: '20px', right: '20px' }} /> : null
+            this.state.showMarkdown ?
+              <CodeMirror
+                value={this.state.fileMarkdown}
+                onChange={this.updateMarkdownEvent}
+                options={{ lineNumbers: true, lineWrapping: true }}
+              />
+              : <Editor
+                id="epona-editor"
+                style={{
+                  minHeight: "10vh",
+                  fontSize: "16px",
+                  border: "none",
+                  overflow: "auto",
+                  outline: "none",
+                  WebkitBoxShadow: "none",
+                  MozBoxShadow: "none",
+                  BoxShadow: "none",
+                  resize: "none"
+                }}
+                onChange={this.checkFileContent}
+                text={this.state.fileContent}
+                options={{
+                  toolbar: {
+                    buttons: ['bold', 'italic', 'underline', 'emoji']
+                  },
+                  buttonLabels: 'fontawesome',
+                  extensions: {
+                    'emoji': this.emojiButton(),
+                    'toolbar-trigger': this.customToolBarTrigger()
+                  }
+                }}
+              />
+          }
+        </div>
+        <div>
+          {this.state.showEmoji &&
+            <Picker
+              title='Pick your emoji…'
+              emoji='point_up'
+              set='emojione'
+              onSelect={this.addEmoji}
+              style={{ position: 'absolute', bottom: '20px', right: '20px' }}
+            />
           }
         </div>
       </Shortcuts>
