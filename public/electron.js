@@ -6,10 +6,13 @@ const { DaemonFactory } = require('@textile/go-daemon')
 const { default: Wallet, Keypair } = require('@textile/wallet')
 const bip39 = require('bip39')
 const keytar = require('keytar')
-
-const PERMAWEB_SECRET = 'Permaweb secret'
-const PERMAWEB_APP_NAMESPACE = 'io.permaweb.desktop'
-const PERMAWEB_PINCODE = 1234
+const {
+  PERMAWEB_SECRET,
+  PERMAWEB_APP_NAMESPACE,
+  PERMAWEB_PINCODE,
+  PERMAWEB_IO_PEER_ID,
+  PERMAWEB_IO_CAFE_TOKEN
+} = process.env
 
 let mainWindow
 
