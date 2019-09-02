@@ -58,13 +58,28 @@ async function spawnDaemon({ secret, repoPath }) {
     await keytar.setPassword(PERMAWEB_APP_NAMESPACE, PERMAWEB_SECRET, secret)
   }
   await daemon.start({ serveDocs: true, pincode: PERMAWEB_PINCODE })
+  return daemon
+}
+
+async function connectToCafe(daemon) {
+  try {
+    const { items: list } = await daemon.api.cafes.list()
+    if (list.find(({ id }) => id === PERMAWEB_IO_PEER_ID)) {
+      // already connected
+      return
+    }
+    await daemon.api.cafes.add(PERMAWEB_IO_PEER_ID, PERMAWEB_IO_CAFE_TOKEN)
+  } catch (err) {
+    console.log('Error connecting to cafe: ', err.toString())
+  }
 }
 
 app.on('ready', async () => {
   try {
     const { keypair, secret } = await getKeyPair()
     const repoPath = getRepoPath(keypair.publicKey())
-    await spawnDaemon({ secret, repoPath })
+    const daemon = await spawnDaemon({ secret, repoPath })
+    await connectToCafe(daemon)
     createWindow()
   } catch (err) {
     console.log('Error', err.toString())
