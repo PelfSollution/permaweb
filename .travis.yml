@@ -50,7 +50,7 @@ before_install:
 
 install:
     # Windows
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then TARGET_OS=windows yarn install ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then TARGET_OS=windows yarn install --network-timeout 500000 ; fi
     # MacOS
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then yarn install ; fi
     # Linux
