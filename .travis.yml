@@ -36,37 +36,38 @@ before_install:
     # Windows
   # Install
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install openssl.light --params "/InstallDir:C:\\OpenSSL-Win64\\" ; fi
-    #- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install -y vcbuildtools -ia "/Full" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install -y vcbuildtools -ia "/Full" ; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install python2 vcredist-all ; fi
   # Configure
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm config set python python2.7 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm config set msvs_version 2017 ; fi
     # MacOS
   # Install
-  #- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install openssl ; fi
   # Configure
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ln -s /usr/local/opt/openssl/include/openssl /usr/local/include ; fi
 
 install:
     # Windows
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then TARGET_OS=windows yarn install --network-timeout 500000 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then yarn install --network-timeout 500000 ; fi
     # MacOS
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then yarn install ; fi
     # Linux
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then TARGET_OS=linux yarn install ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then yarn install ; fi
 
 script:
-  - node node_modules/.bin/electron-rebuild
+  #- node node_modules/.bin/electron-rebuild
+  - yarn exec electron-rebuild
     # Windows
-  - if [[ "$TRAVIS_OS_NAME" == "window" ]]; then TARGET_OS=windows yarn build ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then yarn build ; fi
     # MacOS
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then TARGET_OS=macos yarn build ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then yarn build ; fi
     # Linux
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then TARGET_OS=linux yarn build ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then yarn build ; fi
     # Windows
-  - if [[ "$TRAVIS_OS_NAME" == "window" ]]; then TARGET_OS=windows  npx build --x64 --c.extraMetadata.main=public/electron.js -c.asarUnpack=**/node_modules/@textile/go-textile-dep/**/* --windows ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npx build --x64 --c.extraMetadata.main=public/electron.js -c.asarUnpack=**/node_modules/@textile/go-textile-dep/**/* --windows ; fi
     # MacOS
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then TARGET_OS=macos npx build --x64 --c.extraMetadata.main=public/electron.js -c.asarUnpack=**/node_modules/@textile/go-textile-dep/**/* --macos ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npx build --x64 --c.extraMetadata.main=public/electron.js -c.asarUnpack=**/node_modules/@textile/go-textile-dep/**/* --macos ; fi
     # Linux
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then TARGET_OS=linux npx build --x64 --c.extraMetadata.main=public/electron.js -c.asarUnpack=**/node_modules/@textile/go-textile-dep/**/* --linux ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npx build --x64 --c.extraMetadata.main=public/electron.js -c.asarUnpack=**/node_modules/@textile/go-textile-dep/**/* --linux ; fi
